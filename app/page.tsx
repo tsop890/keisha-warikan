@@ -13,12 +13,12 @@ const RATIOS = [
 
 const PH = ['例：部長', '例：一般', '例：先輩', '例：後輩', '例：幹事'];
 
-type Group = { name: string; count: number; ratio: number; custom: boolean; customVal: number };
+type Group = { name: string; count: number; countStr: string; ratio: number; custom: boolean; customVal: number };
 type Adj = { reason: string; amount: number; sign: 'minus' | 'plus'; gIdx: number; cnt: number };
 
 const defaultGroups = (): Group[] => [
-  { name: '', count: 5, ratio: 1.5, custom: false, customVal: 1.0 },
-  { name: '', count: 4, ratio: 1.0, custom: false, customVal: 1.0 },
+  { name: '', count: 5, countStr: '5', ratio: 1.5, custom: false, customVal: 1.0 },
+  { name: '', count: 4, countStr: '4', ratio: 1.0, custom: false, customVal: 1.0 },
 ];
 
 export default function Home() {
@@ -41,6 +41,23 @@ export default function Home() {
   const isValid = (v: string) => /^[1-9][0-9]*$/.test(v.trim());
   const gName = (i: number) => groups[i]?.name || PH[i] || `グループ${i + 1}`;
   const getMax = (gIdx: number) => gIdx < 0 || !groups[gIdx] ? 99 : groups[gIdx].count;
+
+  const updateGroupCount = (i: number, val: string) => {
+    const num = parseInt(val);
+    setGroups(gs => gs.map((x, j) => j === i ? {
+      ...x,
+      countStr: val,
+      count: isNaN(num) || num < 1 ? 1 : num
+    } : x));
+  };
+
+  const stepGroupCount = (i: number, delta: number) => {
+    setGroups(gs => gs.map((x, j) => {
+      if (j !== i) return x;
+      const next = Math.max(1, x.count + delta);
+      return { ...x, count: next, countStr: String(next) };
+    }));
+  };
 
   const runCalc = useCallback(() => {
     let t = parseInt(total);
@@ -130,7 +147,7 @@ export default function Home() {
   };
 
   return (
-    <main className="w-full max-w-[430px] mx-auto bg-[#f5f5f0] min-h-screen pb-20">
+    <main className="w-full max-w-full mx-auto bg-[#f5f5f0] min-h-screen pb-20">
       {/* Header */}
       <div className="bg-[#2D5A27] px-4 py-3 flex items-center gap-3">
         <span className="text-xl">🍶</span>
@@ -211,29 +228,43 @@ export default function Home() {
             <div className="text-xs text-gray-500 font-medium mb-2 tracking-wide">グループ設定</div>
             {groups.map((g, i) => (
               <div key={i} className="bg-white rounded-xl p-3 mb-2 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <input value={g.name} placeholder={PH[i] || '例：グループ名'}
                     onChange={e => setGroups(gs => gs.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                    className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#2D5A27]" />
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <input type="number" min={1} max={99} value={g.count}
-                      onChange={e => setGroups(gs => gs.map((x, j) => j === i ? { ...x, count: Math.max(1, parseInt(e.target.value) || 1) } : x))}
-                      className="w-9 border border-gray-200 rounded-lg text-center text-sm text-gray-800 py-1.5 outline-none focus:border-[#2D5A27]" />
-                    <span className="text-xs text-gray-500">人</span>
-                  </div>
-                  <button onClick={() => setGroups(gs => gs.filter((_, j) => j !== i))} className="w-6 h-6 rounded-full border border-gray-200 text-gray-400 text-sm flex items-center justify-center flex-shrink-0">×</button>
+                    className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-2 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#2D5A27]" />
+                  <button onClick={() => setGroups(gs => gs.filter((_, j) => j !== i))}
+                    className="w-7 h-7 rounded-full border border-gray-200 text-gray-400 text-sm flex items-center justify-center flex-shrink-0 hover:bg-red-50 hover:text-red-400">×</button>
+                </div>
+                {/* 人数 ±ボタン付き */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs text-gray-500 flex-shrink-0">人数</span>
+                  <button onClick={() => stepGroupCount(i, -1)}
+                    className="w-9 h-9 rounded-lg border-2 border-gray-200 bg-white text-gray-600 text-lg font-bold flex items-center justify-center flex-shrink-0 active:bg-gray-100">－</button>
+                  <input
+                    type="number" inputMode="numeric"
+                    value={g.countStr}
+                    onChange={e => updateGroupCount(i, e.target.value)}
+                    onBlur={e => {
+                      const num = parseInt(e.target.value);
+                      const safe = isNaN(num) || num < 1 ? 1 : num;
+                      setGroups(gs => gs.map((x, j) => j === i ? { ...x, count: safe, countStr: String(safe) } : x));
+                    }}
+                    className="w-14 border border-gray-200 rounded-lg text-center text-base text-gray-800 font-medium py-2 outline-none focus:border-[#2D5A27]" />
+                  <button onClick={() => stepGroupCount(i, 1)}
+                    className="w-9 h-9 rounded-lg border-2 border-gray-200 bg-white text-gray-600 text-lg font-bold flex items-center justify-center flex-shrink-0 active:bg-gray-100">＋</button>
+                  <span className="text-xs text-gray-500">人</span>
                 </div>
                 <div className="text-[11px] text-gray-400 mb-1">比率</div>
                 <div className="grid grid-cols-4 gap-1">
                   {RATIOS.map(r => (
                     <button key={r.v} onClick={() => setGroups(gs => gs.map((x, j) => j === i ? { ...x, ratio: r.v, custom: false } : x))}
-                      className={`py-1 px-0.5 rounded-md border-2 text-center transition-all ${(!g.custom && g.ratio === r.v) ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+                      className={`py-1.5 px-0.5 rounded-md border-2 text-center transition-all ${(!g.custom && g.ratio === r.v) ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
                       <span className="block text-[11px] font-semibold">{r.s}</span>
                       <span className="block text-[9px] opacity-70">{r.n}</span>
                     </button>
                   ))}
                   <button onClick={() => setGroups(gs => gs.map((x, j) => j === i ? { ...x, custom: true } : x))}
-                    className={`py-1 px-0.5 rounded-md border-2 text-center transition-all ${g.custom ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+                    className={`py-1.5 px-0.5 rounded-md border-2 text-center transition-all ${g.custom ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
                     <span className="block text-[11px] font-semibold">自由</span>
                     <span className="block text-[9px] opacity-70">カスタム</span>
                   </button>
@@ -249,7 +280,7 @@ export default function Home() {
                 )}
               </div>
             ))}
-            <button onClick={() => setGroups(gs => [...gs, { name: '', count: 3, ratio: 1.0, custom: false, customVal: 1.0 }])}
+            <button onClick={() => setGroups(gs => [...gs, { name: '', count: 3, countStr: '3', ratio: 1.0, custom: false, customVal: 1.0 }])}
               className="w-full border border-dashed border-gray-300 rounded-xl py-2 text-sm text-gray-400 hover:bg-gray-50">
               ＋ グループを追加
             </button>
@@ -285,7 +316,7 @@ export default function Home() {
                         onChange={e => setAdjs(as => as.map((x, j) => j === i ? { ...x, amount: Math.abs(parseInt(e.target.value) || 0) } : x))}
                         className="w-16 flex-shrink-0 border border-gray-200 rounded-lg px-1 py-1.5 text-sm text-gray-800 outline-none focus:border-[#2D5A27]" />
                       <button onClick={() => setAdjs(as => as.filter((_, j) => j !== i))}
-                        className="w-7 h-7 flex-shrink-0 rounded-full border border-gray-300 bg-white text-gray-400 text-sm flex items-center justify-center hover:bg-red-50 hover:text-red-400 hover:border-red-300">×</button>
+                        className="w-7 h-7 flex-shrink-0 rounded-full border border-gray-300 bg-white text-gray-400 text-sm flex items-center justify-center hover:bg-red-50 hover:text-red-400">×</button>
                     </div>
                     <div className="flex gap-2 items-center">
                       <select value={a.gIdx} onChange={e => {
@@ -536,7 +567,7 @@ export default function Home() {
 
       {/* フッター広告 */}
       {step !== 4 && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 px-4 py-1.5 flex items-center gap-2 z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-1.5 flex items-center gap-2 z-50">
           <span className="text-[9px] text-gray-300 flex-shrink-0">広告</span>
           <div className="flex-1 h-11 bg-gray-50 rounded-lg flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">Google AdSense</div>
         </div>
@@ -545,7 +576,7 @@ export default function Home() {
       {/* 決済モーダル */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-          <div className="bg-white rounded-t-3xl px-6 pt-7 pb-10 w-full max-w-[430px]">
+          <div className="bg-white rounded-t-3xl px-6 pt-7 pb-10 w-full">
             <div className="text-lg font-bold text-center mb-1">集金スムーズパック</div>
             <div className="text-sm text-gray-400 text-center mb-4">以下の機能が解放されます</div>
             <div className="text-4xl font-bold text-center text-[#2D5A27] mb-4">¥500</div>
