@@ -39,9 +39,7 @@ export default function Home() {
   const [rTpl, setRTpl] = useState<'mild' | 'std' | 'urgent'>('mild');
 
   const isValid = (v: string) => /^[1-9][0-9]*$/.test(v.trim());
-
   const gName = (i: number) => groups[i]?.name || PH[i] || `グループ${i + 1}`;
-
   const getMax = (gIdx: number) => gIdx < 0 || !groups[gIdx] ? 99 : groups[gIdx].count;
 
   const runCalc = useCallback(() => {
@@ -132,7 +130,7 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-[390px] mx-auto bg-[#f5f5f0] min-h-screen pb-20">
+    <main className="w-full max-w-[430px] mx-auto bg-[#f5f5f0] min-h-screen pb-20">
       {/* Header */}
       <div className="bg-[#2D5A27] px-4 py-3 flex items-center gap-3">
         <span className="text-xl">🍶</span>
@@ -167,7 +165,6 @@ export default function Home() {
       {/* STEP 1 */}
       {step === 1 && (
         <div className="p-4">
-          {/* 合計金額 */}
           <div className="mb-4">
             <div className="text-xs text-gray-500 font-medium mb-1 tracking-wide">会計情報</div>
             <div className="bg-white rounded-xl p-4 shadow-sm">
@@ -176,12 +173,12 @@ export default function Home() {
                 type="text" inputMode="numeric" placeholder="例：32000"
                 value={total}
                 onChange={e => { setTotal(e.target.value); setTotalErr(!isValid(e.target.value) && e.target.value !== ''); }}
-                className={`w-full border rounded-lg px-3 py-2 text-sm outline-none ${totalErr ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-[#2D5A27]'}`}
+                className={`w-full border rounded-lg px-3 py-2 text-sm text-gray-800 placeholder-gray-300 outline-none ${totalErr ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-[#2D5A27]'}`}
               />
               {totalErr && <div className="text-xs text-red-500 mt-1 px-2 py-1 bg-red-50 rounded border-l-2 border-red-400">半角数字のみ・先頭ゼロ不可・0より大きい整数を入力してください</div>}
               <div className="text-xs text-gray-400 mt-3 mb-1">端数の処理</div>
               <div className="flex rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100">
-                {[100, 10, 1].map((u, i) => (
+                {[100, 10, 1].map((u) => (
                   <button key={u} onClick={() => setRu(u)}
                     className={`flex-1 py-2 text-xs font-medium transition-all ${ru === u ? 'bg-[#2D5A27] text-white font-bold' : 'text-gray-500'}`}>
                     {u}円
@@ -194,7 +191,7 @@ export default function Home() {
           {/* パック */}
           <div className="mb-4 bg-[#fff8ee] border border-[#F39C12] rounded-xl p-4">
             <div className="flex items-center gap-3 cursor-pointer mb-2" onClick={() => setPackOn(!packOn)}>
-              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center text-xs font-bold transition-all ${packOn ? 'bg-[#F39C12] border-[#F39C12] text-white' : 'border-[#F39C12] bg-white'}`}>
+              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all ${packOn ? 'bg-[#F39C12] border-[#F39C12] text-white' : 'border-[#F39C12] bg-white'}`}>
                 {packOn && '✓'}
               </div>
               <div className="text-sm font-medium text-gray-700">集金スムーズパック (+500円) を利用する</div>
@@ -217,14 +214,14 @@ export default function Home() {
                 <div className="flex items-center gap-2 mb-2">
                   <input value={g.name} placeholder={PH[i] || '例：グループ名'}
                     onChange={e => setGroups(gs => gs.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                    className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#2D5A27]" />
+                    className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#2D5A27]" />
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <input type="number" min={1} max={99} value={g.count}
                       onChange={e => setGroups(gs => gs.map((x, j) => j === i ? { ...x, count: Math.max(1, parseInt(e.target.value) || 1) } : x))}
-                      className="w-9 border border-gray-200 rounded-lg text-center text-sm py-1.5 outline-none focus:border-[#2D5A27]" />
+                      className="w-9 border border-gray-200 rounded-lg text-center text-sm text-gray-800 py-1.5 outline-none focus:border-[#2D5A27]" />
                     <span className="text-xs text-gray-500">人</span>
                   </div>
-                  <button onClick={() => setGroups(gs => gs.filter((_, j) => j !== i))} className="w-6 h-6 rounded-full border border-gray-200 text-gray-300 text-sm flex items-center justify-center">×</button>
+                  <button onClick={() => setGroups(gs => gs.filter((_, j) => j !== i))} className="w-6 h-6 rounded-full border border-gray-200 text-gray-400 text-sm flex items-center justify-center flex-shrink-0">×</button>
                 </div>
                 <div className="text-[11px] text-gray-400 mb-1">比率</div>
                 <div className="grid grid-cols-4 gap-1">
@@ -246,7 +243,7 @@ export default function Home() {
                     <span className="text-xs text-gray-500">倍率：</span>
                     <input type="number" step={0.1} min={0.1} value={g.customVal}
                       onChange={e => setGroups(gs => gs.map((x, j) => j === i ? { ...x, customVal: Math.max(0.1, parseFloat(e.target.value) || 1) } : x))}
-                      className="w-16 border border-gray-200 rounded-lg text-center text-sm py-1 outline-none focus:border-[#2D5A27]" />
+                      className="w-16 border border-gray-200 rounded-lg text-center text-sm text-gray-800 py-1 outline-none focus:border-[#2D5A27]" />
                     <span className="text-xs text-gray-500">x</span>
                   </div>
                 )}
@@ -273,39 +270,40 @@ export default function Home() {
               {adjs.map((a, i) => {
                 const max = getMax(a.gIdx);
                 return (
-                  <div key={i} className="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-2">
-                    <div className="flex gap-2 items-start mb-2">
+                  <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-2">
+                    <div className="flex gap-2 items-center mb-2">
                       <div className="flex rounded-lg overflow-hidden border-2 border-gray-300 bg-gray-100 flex-shrink-0">
                         <button onClick={() => setAdjs(as => as.map((x, j) => j === i ? { ...x, sign: 'minus' } : x))}
-                          className={`px-3 py-1.5 text-sm font-bold transition-all ${a.sign === 'minus' ? 'bg-red-500 text-white' : 'text-gray-400'}`}>－</button>
+                          className={`px-2.5 py-1.5 text-sm font-bold transition-all ${a.sign === 'minus' ? 'bg-red-500 text-white' : 'text-gray-400'}`}>－</button>
                         <button onClick={() => setAdjs(as => as.map((x, j) => j === i ? { ...x, sign: 'plus' } : x))}
-                          className={`px-3 py-1.5 text-sm font-bold transition-all ${a.sign === 'plus' ? 'bg-[#2D5A27] text-white' : 'text-gray-400'}`}>＋</button>
+                          className={`px-2.5 py-1.5 text-sm font-bold transition-all ${a.sign === 'plus' ? 'bg-[#2D5A27] text-white' : 'text-gray-400'}`}>＋</button>
                       </div>
                       <input type="text" placeholder="理由" value={a.reason}
                         onChange={e => setAdjs(as => as.map((x, j) => j === i ? { ...x, reason: e.target.value } : x))}
-                        className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#2D5A27]" />
+                        className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#2D5A27]" />
                       <input type="number" placeholder="金額" value={a.amount || ''}
                         onChange={e => setAdjs(as => as.map((x, j) => j === i ? { ...x, amount: Math.abs(parseInt(e.target.value) || 0) } : x))}
-                        className="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm outline-none focus:border-[#2D5A27]" />
-                      <button onClick={() => setAdjs(as => as.filter((_, j) => j !== i))} className="w-6 h-6 rounded-full border border-gray-200 text-gray-300 text-sm flex items-center justify-center">×</button>
+                        className="w-16 flex-shrink-0 border border-gray-200 rounded-lg px-1 py-1.5 text-sm text-gray-800 outline-none focus:border-[#2D5A27]" />
+                      <button onClick={() => setAdjs(as => as.filter((_, j) => j !== i))}
+                        className="w-7 h-7 flex-shrink-0 rounded-full border border-gray-300 bg-white text-gray-400 text-sm flex items-center justify-center hover:bg-red-50 hover:text-red-400 hover:border-red-300">×</button>
                     </div>
                     <div className="flex gap-2 items-center">
                       <select value={a.gIdx} onChange={e => {
                         const gi = parseInt(e.target.value);
                         const newMax = gi < 0 ? 99 : groups[gi]?.count || 99;
                         setAdjs(as => as.map((x, j) => j === i ? { ...x, gIdx: gi, cnt: Math.min(x.cnt, newMax) } : x));
-                      }} className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-xs outline-none">
+                      }} className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 outline-none">
                         <option value={-1}>グループ選択</option>
                         {groups.map((g, gi) => <option key={gi} value={gi}>{g.name || PH[gi] || `グループ${gi + 1}`}</option>)}
                       </select>
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button disabled={a.cnt <= 1} onClick={() => setAdjs(as => as.map((x, j) => j === i ? { ...x, cnt: x.cnt - 1 } : x))}
-                          className="w-7 h-7 border border-gray-200 rounded-md text-sm flex items-center justify-center disabled:opacity-30">−</button>
-                        <span className="text-sm font-medium w-5 text-center">{a.cnt}</span>
+                          className="w-7 h-7 border border-gray-200 rounded-md text-sm flex items-center justify-center disabled:opacity-30 bg-white">−</button>
+                        <span className="text-sm font-medium w-5 text-center text-gray-700">{a.cnt}</span>
                         <button disabled={a.gIdx >= 0 && a.cnt >= max} onClick={() => setAdjs(as => as.map((x, j) => j === i ? { ...x, cnt: x.cnt + 1 } : x))}
-                          className="w-7 h-7 border border-gray-200 rounded-md text-sm flex items-center justify-center disabled:opacity-30">＋</button>
+                          className="w-7 h-7 border border-gray-200 rounded-md text-sm flex items-center justify-center disabled:opacity-30 bg-white">＋</button>
                       </div>
-                      {a.gIdx >= 0 && <span className="text-[10px] text-gray-400">上限{max}人</span>}
+                      {a.gIdx >= 0 && <span className="text-[10px] text-gray-400 flex-shrink-0">上限{max}人</span>}
                     </div>
                     <div className="text-[10px] text-gray-400 mt-1">{a.sign === 'minus' ? '⬇ 割引' : '⬆ 回収'}</div>
                   </div>
@@ -328,15 +326,12 @@ export default function Home() {
       {step === 2 && calcResult && (
         <div className="p-4">
           <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-gray-500 border border-gray-300 rounded-lg px-3 py-2 mb-4 hover:border-[#2D5A27] hover:text-[#2D5A27]">← 入力に戻る</button>
-
-          {/* お釣り */}
           <div className="bg-[#2D5A27] rounded-xl p-4 mb-4 text-center">
             <div className="text-xs text-[#9dc99a] mb-1">{calcResult.otsuri >= 0 ? 'お釣り（幹事が還元）' : '不足金額'}</div>
             <div className="text-4xl font-bold text-white">{calcResult.otsuri >= 0 ? '+' : '-'}¥{Math.abs(calcResult.otsuri).toLocaleString()}</div>
             <div className="text-xs text-[#9dc99a] mt-1">合計: ¥{calcResult.total.toLocaleString()} ／ 集金予定: ¥{calcResult.collected.toLocaleString()}</div>
           </div>
 
-          {/* グループ別 */}
           <div className="mb-4">
             <div className="text-xs text-gray-500 font-medium mb-2 tracking-wide">グループ別金額</div>
             {calcResult.groups.map((g: any, i: number) => {
@@ -379,7 +374,6 @@ export default function Home() {
             })}
           </div>
 
-          {/* 個別調整結果 */}
           {adjs.length > 0 && (
             <div className="mb-4">
               <div className="text-xs text-gray-500 font-medium mb-2 tracking-wide">個別調整（反映済み）</div>
@@ -395,7 +389,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* LINEプレビュー */}
           <div className="mb-4">
             <div className="text-xs text-gray-500 font-medium mb-2 tracking-wide">LINE メッセージプレビュー</div>
             <div className="bg-white rounded-xl p-4 shadow-sm">
@@ -427,10 +420,7 @@ export default function Home() {
             </div>
           </div>
 
-          <button onClick={() => {
-            if (!packOn || !packPaid) setStep(3);
-            else setStep(3);
-          }} style={{ backgroundColor: '#2D5A27' }} className="w-full py-4 rounded-xl text-white text-base font-bold">
+          <button onClick={() => setStep(3)} style={{ backgroundColor: '#2D5A27' }} className="w-full py-4 rounded-xl text-white text-base font-bold">
             {packOn ? '集金チェックリストへ →' : '完了へ進む →'}
           </button>
         </div>
@@ -454,16 +444,16 @@ export default function Home() {
                   {members.map((m, i) => (
                     <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
                       <div onClick={() => setMembers(ms => ms.map((x, j) => j === i ? { ...x, paid: !x.paid } : x))}
-                        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center text-xs cursor-pointer transition-all ${m.paid ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-300'}`}>
+                        className={`w-6 h-6 rounded-md border-2 flex items-center justify-center text-xs cursor-pointer flex-shrink-0 transition-all ${m.paid ? 'bg-[#2D5A27] border-[#2D5A27] text-white' : 'border-gray-300'}`}>
                         {m.paid && '✓'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs text-gray-400">{m.label}</div>
                         <input value={m.name} placeholder="名前を入力（任意）"
                           onChange={e => setMembers(ms => ms.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                          className="w-full text-sm text-gray-700 border-b border-gray-200 pb-0.5 outline-none focus:border-[#2D5A27] bg-transparent" />
+                          className="w-full text-sm text-gray-700 border-b border-gray-200 pb-0.5 outline-none focus:border-[#2D5A27] bg-transparent placeholder-gray-300" />
                       </div>
-                      <div className="text-sm font-medium text-[#2D5A27]">¥{m.amount.toLocaleString()}</div>
+                      <div className="text-sm font-medium text-[#2D5A27] flex-shrink-0">¥{m.amount.toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -525,14 +515,14 @@ export default function Home() {
               <div className="text-[10px] text-gray-300 mb-1"><span className="bg-gray-100 text-gray-300 text-[9px] px-1 rounded">Sponsored</span></div>
               <div className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 mb-2">
                 <span className="text-2xl">🚕</span>
-                <div className="flex-1"><div className="text-sm font-medium">GO タクシー</div><div className="text-xs text-gray-400">今すぐ配車。アプリ不要でQRから呼べる。</div></div>
-                <button style={{ backgroundColor: '#F39C12' }} className="text-white text-xs font-medium px-3 py-1.5 rounded-lg">呼ぶ</button>
+                <div className="flex-1 min-w-0"><div className="text-sm font-medium">GO タクシー</div><div className="text-xs text-gray-400">今すぐ配車。アプリ不要でQRから呼べる。</div></div>
+                <button style={{ backgroundColor: '#F39C12' }} className="text-white text-xs font-medium px-3 py-1.5 rounded-lg flex-shrink-0">呼ぶ</button>
               </div>
               <div className="text-[10px] text-gray-300 mb-1"><span className="bg-gray-100 text-gray-300 text-[9px] px-1 rounded">Sponsored</span></div>
               <div className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3 mb-4">
                 <span className="text-2xl">🏮</span>
-                <div className="flex-1"><div className="text-sm font-medium">2次会を探す</div><div className="text-xs text-gray-400">ホットペッパーで近くのお店を予約。</div></div>
-                <button style={{ backgroundColor: '#2D5A27' }} className="text-white text-xs font-medium px-3 py-1.5 rounded-lg">探す</button>
+                <div className="flex-1 min-w-0"><div className="text-sm font-medium">2次会を探す</div><div className="text-xs text-gray-400">ホットペッパーで近くのお店を予約。</div></div>
+                <button style={{ backgroundColor: '#2D5A27' }} className="text-white text-xs font-medium px-3 py-1.5 rounded-lg flex-shrink-0">探す</button>
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -546,7 +536,7 @@ export default function Home() {
 
       {/* フッター広告 */}
       {step !== 4 && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] bg-white border-t border-gray-100 px-4 py-1.5 flex items-center gap-2 z-50">
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 px-4 py-1.5 flex items-center gap-2 z-50">
           <span className="text-[9px] text-gray-300 flex-shrink-0">広告</span>
           <div className="flex-1 h-11 bg-gray-50 rounded-lg flex items-center justify-center text-xs text-gray-300 border border-dashed border-gray-200">Google AdSense</div>
         </div>
@@ -555,7 +545,7 @@ export default function Home() {
       {/* 決済モーダル */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-          <div className="bg-white rounded-t-3xl px-6 pt-7 pb-10 w-full max-w-[390px]">
+          <div className="bg-white rounded-t-3xl px-6 pt-7 pb-10 w-full max-w-[430px]">
             <div className="text-lg font-bold text-center mb-1">集金スムーズパック</div>
             <div className="text-sm text-gray-400 text-center mb-4">以下の機能が解放されます</div>
             <div className="text-4xl font-bold text-center text-[#2D5A27] mb-4">¥500</div>
